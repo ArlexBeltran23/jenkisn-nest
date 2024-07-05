@@ -62,6 +62,9 @@ pipeline {
         }
 
            stage('PR Validation') {
+            when {
+        expression { return env.CHANGE_ID || env.BRANCH_NAME == 'master' }
+        }
             steps {
                 echo 'Validando Pull Request...'
                 
