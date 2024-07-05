@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        registry = "arlexbeltran/jenkins_nest"
+        registry = "arlexbeltran/jenkins-nest"
     }
 
     stages {
@@ -18,6 +18,12 @@ pipeline {
             }
         }
 
+        stage('Build') {
+            steps {
+                sh 'npm run build'
+            }
+        }
+
         // stage('Lint') {
         //     steps {
         //         sh 'npm run lint'
@@ -30,13 +36,10 @@ pipeline {
         //     }
         // }
 
-        stage('Build') {
-            steps {
-                sh 'npm run build'
-            }
-        }
-
         stage('Build Docker Image') {
+            when {
+                expression { return !env.CHANGE_ID }
+            }
             steps {
                 script {
                     dockerImage = docker.build(registry, "-f Dockerfile .")
@@ -45,6 +48,9 @@ pipeline {
         }
 
         stage('Push to Docker Hub') {
+            when {
+                expression { return !env.CHANGE_ID }
+            }
             steps {
                 script {
                     docker.withRegistry('https://registry.hub.docker.com', 'AngularHub') {
@@ -52,6 +58,30 @@ pipeline {
                         dockerImage.push("latest")
                     }
                 }
+            }
+        }
+
+           stage('PR Validation') {
+            when {
+                expression { return env.CHANGE_ID }
+            }
+            steps {
+                echo 'Validando Pull Request...'
+                
+                // Instalar dependencias para validación
+                sh 'npm install'
+                
+                // Linting
+                echo 'Ejecutando Linting...'
+                sh 'npm run lint'
+                
+                // Pruebas unitarias
+                echo 'Ejecutando Pruebas Unitarias...'
+                sh 'npm run test'
+                
+                // Análisis de seguridad
+                echo 'Ejecutando Análisis de Seguridad...'
+                sh 'npm audit --audit-level=high'
             }
         }
     }
