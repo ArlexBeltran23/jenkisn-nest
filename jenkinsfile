@@ -3,17 +3,7 @@ pipeline {
 
     environment {
         registry = "arlexbeltran/jenkins-nest"
-    }
-
-    triggers {
-        // Trigger builds on pull request events (GitHub example)
-        githubPullRequest {
-            events {
-                Opened()
-                Updated()
-                Reopened()
-            }
-        }
+        githubCredentialsId = 'AngularPipe'  // Reemplaza con el ID de tus credenciales de GitHub
     }
 
     stages {
@@ -90,7 +80,9 @@ pipeline {
             // Report success to PR (if using GitHub)
             script {
                 if (env.CHANGE_ID) {
-                    githubNotify context: 'Jenkins', description: 'Build successful', status: 'SUCCESS', targetUrl: "${env.BUILD_URL}"
+                    withCredentials([string(credentialsId: env.githubCredentialsId, variable: 'AngularPipe')]) {
+                        githubNotify context: 'Jenkins', description: 'Build successful', status: 'SUCCESS', targetUrl: "${env.BUILD_URL}", credentialsId: env.githubCredentialsId
+                    }
                 }
             }
         }
@@ -99,7 +91,9 @@ pipeline {
             // Report failure to PR (if using GitHub)
             script {
                 if (env.CHANGE_ID) {
-                    githubNotify context: 'Jenkins', description: 'Build failed', status: 'FAILURE', targetUrl: "${env.BUILD_URL}"
+                    withCredentials([string(credentialsId: env.githubCredentialsId, variable: 'AngularPipe')]) {
+                        githubNotify context: 'Jenkins', description: 'Build failed', status: 'FAILURE', targetUrl: "${env.BUILD_URL}", credentialsId: env.githubCredentialsId
+                    }
                 }
             }
         }
