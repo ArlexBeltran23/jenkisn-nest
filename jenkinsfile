@@ -80,7 +80,7 @@ pipeline {
                 sh 'npm run test'
                 
                 // Análisis de seguridad
-                echo 'Ejecutando Análisis de Seguridad...'
+                echo 'Ejecutando Análisis de Seguridad......'
                 sh 'npm audit --audit-level=high'
             }
         }
