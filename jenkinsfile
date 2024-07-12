@@ -10,7 +10,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 script {
-                    checkout([$class: 'GitSCM', branches: [[name: '*/master']], 
+                    checkout([$class: 'GitSCM', branches: [[name: '*/']], 
                               doGenerateSubmoduleConfigurations: false, 
                               extensions: [], submoduleCfg: [], userRemoteConfigs: [[url: 'https://github.com/ArlexBeltran23/jenkisn-nest.git']]])
                 }
