@@ -3,21 +3,40 @@ pipeline {
 
     environment {
         registry = "arlexbeltran/jenkins-nest"
-        githubCredentialsId = 'AngularPipe'  // ID de tus credenciales de GitHub
+        githubCredentialsId = 'AngularPipe'
     }
 
     stages {
-        stage('Checkout') {
+        stage('Clean Up') {
             steps {
                 script {
-                    checkout([$class: 'GitSCM', branches: [[name: '*/master']], 
-                              doGenerateSubmoduleConfigurations: false, 
-                              extensions: [], submoduleCfg: [], userRemoteConfigs: [[url: 'https://github.com/ArlexBeltran23/jenkisn-nest.git']]])
+                    // Clean up steps
+                    echo 'Cleaning up workspace...'
+                    deleteDir() 
                 }
             }
         }
-
-        stage('Install Dependencies') {
+        
+        stage('Checkout') {
+            steps {
+                script {
+                    
+                    echo 'Checking out code...'
+                    checkout scm
+                }
+            }
+        }
+        
+        stage('Test') {
+            steps {
+                script {
+                    
+                    echo 'Running tests...'
+                    
+                }
+            }
+        }
+          stage('Install Dependencies') {
             steps {
                 sh 'npm install'
             }
@@ -30,20 +49,13 @@ pipeline {
         }
 
         stage('Build Docker Image') {
-            when {
-                changeset '/*'
-            }
             steps {
                 script {
                     dockerImage = docker.build(registry, "-f Dockerfile .")
                 }
             }
         }
-
-        stage('Push to Docker Hub') {
-            when {
-                changeset '/*'
-            }
+           stage('Push to Docker Hub') {
             steps {
                 script {
                     docker.withRegistry('https://registry.hub.docker.com', 'AngularHub') {
@@ -54,31 +66,56 @@ pipeline {
             }
         }
     }
-
+        
+        stage('Static Code Analysis') {
+            steps {
+                script {
+                    
+                    echo 'Running static code analysis...'
+                
+                }
+            }
+        }
+        
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    // Build Docker image
+                    echo 'Building Docker image...'
+                    sh 'docker build -t my-image .'
+                }
+            }
+        }
+        
+        stage('Publish Docker Image') {
+            steps {
+                script {
+                    // Publish Docker image to ECR or DockerHub
+                    echo 'Publishing Docker image...'
+                    // Example: sh 'docker push my-image'
+                }
+            }
+        }
+    }
+    
     post {
         always {
             script {
-                echo 'Pipeline completado.'
+                // Steps to run always, for example cleanup
+                echo 'Pipeline finished, performing cleanup...'
+                deleteDir()
             }
         }
-
         success {
             script {
-                if (env.CHANGE_ID) {
-                    withCredentials([string(credentialsId: env.githubCredentialsId, variable: 'AngularPipe')]) {
-                        githubNotify context: 'Jenkins', description: 'Build successful', status: 'SUCCESS', targetUrl: "${env.BUILD_URL}", credentialsId: env.githubCredentialsId
-                    }
-                }
+                // Steps to run on success
+                echo 'Pipeline succeeded!'
             }
         }
-
         failure {
             script {
-                if (env.CHANGE_ID) {
-                    withCredentials([string(credentialsId: env.githubCredentialsId, variable: 'AngularPipe')]) {
-                        githubNotify context: 'Jenkins', description: 'Build failed', status: 'FAILURE', targetUrl: "${env.BUILD_URL}", credentialsId: env.githubCredentialsId
-                    }
-                }
+                // Steps to run on failure
+                echo 'Pipeline failed.'
             }
         }
     }
