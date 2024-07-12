@@ -7,7 +7,7 @@ pipeline {
     }
 
     triggers {
-        issueCommentTrigger('.*test this please.*')
+        issueCommentTrigger('.*test this pleaseeeeee.*')
         pollSCM('H/5 * * * *')
     }
 
