@@ -3,17 +3,33 @@ pipeline {
 
     environment {
         registry = "arlexbeltran/jenkins-nest"
-        githubCredentialsId = 'AngularPipe'  // ID de tus credenciales de GitHub
+        githubCredentialsId = 'AngularPipe'
+    }
+
+    triggers {
+        issueCommentTrigger('.*test this please.*')
+        pollSCM('H/5 * * * *')
     }
 
     stages {
+        stage('Clean Up') {
+            steps {
+                echo 'Cleaning up workspace...'
+                deleteDir()
+            }
+        }
+
         stage('Checkout') {
             steps {
-                script {
-                    checkout([$class: 'GitSCM', branches: [[name: '*/master']], 
-                              doGenerateSubmoduleConfigurations: false, 
-                              extensions: [], submoduleCfg: [], userRemoteConfigs: [[url: 'https://github.com/ArlexBeltran23/jenkisn-nest.git']]])
-                }
+                echo 'Checking out code...'
+                checkout scm
+            }
+        }
+
+        stage('Test') {
+            steps {
+                echo 'Running tests...'
+                // Aquí puedes ejecutar tus comandos de prueba si es necesario
             }
         }
 
@@ -30,9 +46,6 @@ pipeline {
         }
 
         stage('Build Docker Image') {
-            when {
-                changeset '/*'
-            }
             steps {
                 script {
                     dockerImage = docker.build(registry, "-f Dockerfile .")
@@ -41,9 +54,6 @@ pipeline {
         }
 
         stage('Push to Docker Hub') {
-            when {
-                changeset '/*'
-            }
             steps {
                 script {
                     docker.withRegistry('https://registry.hub.docker.com', 'AngularHub') {
@@ -57,29 +67,14 @@ pipeline {
 
     post {
         always {
-            script {
-                echo 'Pipeline completado.'
-            }
+            echo 'Pipeline finished, performing cleanup...'
+            deleteDir()
         }
-
         success {
-            script {
-                if (env.CHANGE_ID) {
-                    withCredentials([string(credentialsId: env.githubCredentialsId, variable: 'AngularPipe')]) {
-                        githubNotify context: 'Jenkins', description: 'Build successful', status: 'SUCCESS', targetUrl: "${env.BUILD_URL}", credentialsId: env.githubCredentialsId
-                    }
-                }
-            }
+            echo 'Pipeline succeeded!'
         }
-
         failure {
-            script {
-                if (env.CHANGE_ID) {
-                    withCredentials([string(credentialsId: env.githubCredentialsId, variable: 'AngularPipe')]) {
-                        githubNotify context: 'Jenkins', description: 'Build failed', status: 'FAILURE', targetUrl: "${env.BUILD_URL}", credentialsId: env.githubCredentialsId
-                    }
-                }
-            }
+            echo 'Pipeline failed.'
         }
     }
 }
