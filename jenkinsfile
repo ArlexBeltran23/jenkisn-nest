@@ -6,6 +6,11 @@ pipeline {
         githubCredentialsId = 'AngularPipe'
     }
 
+    triggers {
+        issueCommentTrigger('.*test this please.*')
+        pollSCM('H/5 * * * *')
+    }
+
     stages {
         stage('Clean Up') {
             steps {
@@ -31,6 +36,7 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 sh 'npm install'
+                
             }
         }
 
