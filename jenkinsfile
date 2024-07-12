@@ -7,7 +7,7 @@ pipeline {
     }
 
     triggers {
-        issueCommentTrigger('.*test this pleaseeeeee.*')
+        issueCommentTrigger('.*test this please.*')
         pollSCM('H/5 * * * *')
     }
 
@@ -36,6 +36,7 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 sh 'npm install'
+                
             }
         }
 
