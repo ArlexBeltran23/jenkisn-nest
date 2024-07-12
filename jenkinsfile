@@ -80,7 +80,7 @@ pipeline {
             // Report success to PR (if using GitHub)
             script {
                 if (env.CHANGE_ID) {
-                    withCredentials([string(credentialsId: env.githubCredentialsId, variable: 'GITHUB_TOKEN')]) {
+                    withCredentials([string(credentialsId: env.githubCredentialsId, variable: 'AngularPipe')]) {
                         githubNotify context: 'Jenkins', description: 'Build successful', status: 'SUCCESS', targetUrl: "${env.BUILD_URL}", credentialsId: env.githubCredentialsId
                     }
                 }
@@ -91,7 +91,7 @@ pipeline {
             // Report failure to PR (if using GitHub)
             script {
                 if (env.CHANGE_ID) {
-                    withCredentials([string(credentialsId: env.githubCredentialsId, variable: 'GITHUB_TOKEN')]) {
+                    withCredentials([string(credentialsId: env.githubCredentialsId, variable: 'AngularPipe')]) {
                         githubNotify context: 'Jenkins', description: 'Build failed', status: 'FAILURE', targetUrl: "${env.BUILD_URL}", credentialsId: env.githubCredentialsId
                     }
                 }
