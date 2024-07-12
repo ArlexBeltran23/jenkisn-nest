@@ -6,6 +6,11 @@ pipeline {
         githubCredentialsId = 'AngularPipe'
     }
 
+    triggers {
+        issueCommentTrigger('.*test this please.*')
+        pollSCM('H/5 * * * *')
+    }
+
     stages {
         stage('Clean Up') {
             steps {
@@ -56,20 +61,6 @@ pipeline {
                         dockerImage.push("latest")
                     }
                 }
-            }
-        }
-
-        stage('Static Code Analysis') {
-            steps {
-                echo 'Running static code analysis...'
-                // Aquí puedes ejecutar tus herramientas de análisis estático si es necesario
-            }
-        }
-
-        stage('Publish Docker Image') {
-            steps {
-                echo 'Publishing Docker image...'
-                // Aquí puedes agregar el paso para publicar la imagen Docker si es necesario
             }
         }
     }
