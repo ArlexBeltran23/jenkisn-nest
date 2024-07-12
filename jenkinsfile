@@ -9,34 +9,26 @@ pipeline {
     stages {
         stage('Clean Up') {
             steps {
-                script {
-                    // Clean up steps
-                    echo 'Cleaning up workspace...'
-                    deleteDir() 
-                }
+                echo 'Cleaning up workspace...'
+                deleteDir()
             }
         }
-        
+
         stage('Checkout') {
             steps {
-                script {
-                    
-                    echo 'Checking out code...'
-                    checkout scm
-                }
+                echo 'Checking out code...'
+                checkout scm
             }
         }
-        
+
         stage('Test') {
             steps {
-                script {
-                    
-                    echo 'Running tests...'
-                    
-                }
+                echo 'Running tests...'
+                // Aquí puedes ejecutar tus comandos de prueba si es necesario
             }
         }
-          stage('Install Dependencies') {
+
+        stage('Install Dependencies') {
             steps {
                 sh 'npm install'
             }
@@ -55,7 +47,8 @@ pipeline {
                 }
             }
         }
-           stage('Push to Docker Hub') {
+
+        stage('Push to Docker Hub') {
             steps {
                 script {
                     docker.withRegistry('https://registry.hub.docker.com', 'AngularHub') {
@@ -65,58 +58,32 @@ pipeline {
                 }
             }
         }
-    }
-        
+
         stage('Static Code Analysis') {
             steps {
-                script {
-                    
-                    echo 'Running static code analysis...'
-                
-                }
+                echo 'Running static code analysis...'
+                // Aquí puedes ejecutar tus herramientas de análisis estático si es necesario
             }
         }
-        
-        stage('Build Docker Image') {
-            steps {
-                script {
-                    // Build Docker image
-                    echo 'Building Docker image...'
-                    sh 'docker build -t my-image .'
-                }
-            }
-        }
-        
+
         stage('Publish Docker Image') {
             steps {
-                script {
-                    // Publish Docker image to ECR or DockerHub
-                    echo 'Publishing Docker image...'
-                    // Example: sh 'docker push my-image'
-                }
+                echo 'Publishing Docker image...'
+                // Aquí puedes agregar el paso para publicar la imagen Docker si es necesario
             }
         }
     }
-    
+
     post {
         always {
-            script {
-                // Steps to run always, for example cleanup
-                echo 'Pipeline finished, performing cleanup...'
-                deleteDir()
-            }
+            echo 'Pipeline finished, performing cleanup...'
+            deleteDir()
         }
         success {
-            script {
-                // Steps to run on success
-                echo 'Pipeline succeeded!'
-            }
+            echo 'Pipeline succeeded!'
         }
         failure {
-            script {
-                // Steps to run on failure
-                echo 'Pipeline failed.'
-            }
+            echo 'Pipeline failed.'
         }
     }
 }
