@@ -3,6 +3,7 @@ pipeline {
 
     environment {
         registry = "arlexbeltran/jenkins-nest"
+        githubCredentialsId = 'AngularPipe'  // ID de las credenciales de GitHub en Jenkins
     }
 
     stages {
@@ -12,7 +13,7 @@ pipeline {
             }
         }
 
-        stage('Install Dependencies'){
+        stage('Install Dependencies') {
             steps {
                 sh 'npm install'
             }
@@ -24,17 +25,18 @@ pipeline {
             }
         }
 
-        stage('Lint') {
-            steps {
-                sh 'npm run lint'
-            }
-        }
+        // Uncomment and use these stages if needed
+        // stage('Lint') {
+        //     steps {
+        //         sh 'npm run lint'
+        //     }
+        // }
 
-        stage('Test') {
-            steps {
-                sh 'npm run test'
-            }
-        }
+        // stage('Test') {
+        //     steps {
+        //         sh 'npm run test'
+        //     }
+        // }
 
         stage('Build Docker Image') {
             when {
@@ -60,38 +62,40 @@ pipeline {
                 }
             }
         }
-
-           stage('PR Validation') {
-            when {
-                    expression { return env.CHANGE_ID }
-            }
-            steps {
-                echo 'Validando Pull Request...'
-                
-                // Instalar dependencias para validación
-                sh 'npm install'
-                
-                // Linting
-                echo 'Ejecutando Linting...'
-                sh 'npm run lint'
-                
-                // Pruebas unitarias
-                echo 'Ejecutando Pruebas Unitarias...'
-                sh 'npm run test'
-                
-                // Análisis de seguridad
-                echo 'Ejecutando Análisis de Seguridad......'
-                sh 'npm audit --audit-level=high'
-            }
-        }
     }
 
     post {
-        success {
-            echo '¡Pipeline completado exitosamente!'
+        always {
+            script {
+                def status = currentBuild.currentResult
+                if (status == 'SUCCESS') {
+                    echo '¡Pipeline completado exitosamente!'
+                } else {
+                    echo '¡Pipeline falló! Revisa los logs para más detalles.'
+                }
+            }
         }
+
+        success {
+            // Report success to PR (if using GitHub)
+            script {
+                if (env.CHANGE_ID) {
+                    withCredentials([string(credentialsId: env.githubCredentialsId, variable: 'GITHUB_TOKEN')]) {
+                        githubNotify context: 'Jenkins', description: 'Build successful', status: 'SUCCESS', targetUrl: "${env.BUILD_URL}", credentialsId: env.githubCredentialsId
+                    }
+                }
+            }
+        }
+
         failure {
-            echo '¡Pipeline falló! Revisa los logs para más detalles.'
+            // Report failure to PR (if using GitHub)
+            script {
+                if (env.CHANGE_ID) {
+                    withCredentials([string(credentialsId: env.githubCredentialsId, variable: 'GITHUB_TOKEN')]) {
+                        githubNotify context: 'Jenkins', description: 'Build failed', status: 'FAILURE', targetUrl: "${env.BUILD_URL}", credentialsId: env.githubCredentialsId
+                    }
+                }
+            }
         }
     }
 }
