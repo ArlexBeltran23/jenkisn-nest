@@ -3,13 +3,17 @@ pipeline {
 
     environment {
         registry = "arlexbeltran/jenkins-nest"
-        githubCredentialsId = 'AngularPipe'  // ID de las credenciales de GitHub en Jenkins
+        githubCredentialsId = 'AngularPipe'  // ID de tus credenciales de GitHub
     }
 
     stages {
         stage('Checkout') {
             steps {
-                checkout scm
+                script {
+                    checkout([$class: 'GitSCM', branches: [[name: '*/master']], 
+                              doGenerateSubmoduleConfigurations: false, 
+                              extensions: [], submoduleCfg: [], userRemoteConfigs: [[url: 'https://github.com/ArlexBeltran23/jenkisn-nest.git']]])
+                }
             }
         }
 
@@ -25,22 +29,9 @@ pipeline {
             }
         }
 
-        // Uncomment and use these stages if needed
-        // stage('Lint') {
-        //     steps {
-        //         sh 'npm run lint'
-        //     }
-        // }
-
-        // stage('Test') {
-        //     steps {
-        //         sh 'npm run test'
-        //     }
-        // }
-
         stage('Build Docker Image') {
             when {
-                expression { return !env.CHANGE_ID }
+                changeset '/*'
             }
             steps {
                 script {
@@ -51,7 +42,7 @@ pipeline {
 
         stage('Push to Docker Hub') {
             when {
-                expression { return !env.CHANGE_ID }
+                changeset '/*'
             }
             steps {
                 script {
@@ -67,17 +58,11 @@ pipeline {
     post {
         always {
             script {
-                def status = currentBuild.currentResult
-                if (status == 'SUCCESS') {
-                    echo '¡Pipeline completado exitosamente!'
-                } else {
-                    echo '¡Pipeline falló! Revisa los logs para más detalles.'
-                }
+                echo 'Pipeline completado.'
             }
         }
 
         success {
-            // Report success to PR (if using GitHub)
             script {
                 if (env.CHANGE_ID) {
                     withCredentials([string(credentialsId: env.githubCredentialsId, variable: 'AngularPipe')]) {
@@ -88,7 +73,6 @@ pipeline {
         }
 
         failure {
-            // Report failure to PR (if using GitHub)
             script {
                 if (env.CHANGE_ID) {
                     withCredentials([string(credentialsId: env.githubCredentialsId, variable: 'AngularPipe')]) {
