@@ -6,10 +6,6 @@ pipeline {
         githubCredentialsId = 'AngularPipe'
     }
 
-    triggers {
-        pollSCM('H/5 * * * *') // Revisa cada 5 minutos
-    }
-
     stages {
         stage('Clean Up') {
             steps {
