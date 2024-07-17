@@ -72,7 +72,7 @@ pipeline {
             deleteDir()
         }
         success {
-            echo 'Pipeline succeeded!'
+            echo 'Pipeline completado correctamente!'
         }
         failure {
             echo 'Pipeline failed.'
