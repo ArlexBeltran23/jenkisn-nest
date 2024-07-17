@@ -68,7 +68,7 @@ pipeline {
 
     post {
         always {
-            echo 'Pipeline finished, performing cleanup'
+            echo 'Pipeline finalizado, se realiza limpieza'
             deleteDir()
         }
         success {
