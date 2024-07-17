@@ -14,7 +14,7 @@ pipeline {
     stages {
         stage('Clean Up') {
             steps {
-                echo 'Cleaning up workspace...'
+                echo 'Cleaning up workspace'
                 deleteDir()
             }
         }
