@@ -28,8 +28,8 @@ pipeline {
 
         stage('Test') {
             steps {
-                echo 'Running tests...'
-                // Aquí puedes ejecutar tus comandos de prueba si es necesario
+                echo 'Running tests'
+                
             }
         }
 
